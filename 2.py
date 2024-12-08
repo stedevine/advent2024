@@ -1,4 +1,4 @@
-from typing import Iterator, List
+from typing import Iterator, List, Callable
 test = """
 7 6 4 2 1
 1 2 7 8 9
@@ -12,36 +12,32 @@ def get_safe_count(lines: List[str]) -> int:
     for reading in get_readings(lines):
         if reading[0] == reading[1]:
             continue
-        if reading[1] > reading[0] and is_increasing(reading):
-            safe_count += 1
+        if reading[1] > reading[0]:
+            if (error_count(reading, increasing_ok) == 0):
+                safe_count += 1
         else:
-            if is_decreasing(reading):
+            if (error_count(reading, decreasing_ok) == 0):
                 safe_count += 1
     return safe_count
 
-def is_increasing(reading: List[int]):
-    result = True
-    current = reading[0]
-    for v in reading[1:]: 
-        if (v - current) > 0 and (v - current) < 4:
-            current = v
-        else:
-            result = False
-            break
-    print(f"Is Increasing {reading} {result}")
-    return result
+def increasing_ok(x: int, y:int) -> bool:
+   return (y - x) > 0 and (y - x) < 4
 
-def is_decreasing(reading: List[int]):
-    result = True
+def decreasing_ok(x: int, y:int) -> bool:
+   return (x - y) > 0 and (x - y) < 4
+
+def error_count(reading: List[int], valid: Callable):
+    count = 0
     current = reading[0]
     for v in reading[1:]: 
-        if (current - v) > 0 and (current - v) < 4:
+        if valid(current,v):
             current = v
         else:
-            result = False
-            break
-    print(f"Is Decreasing {reading} {result}")
-    return result
+            count += 1
+    if count > 0:
+        print(f"Is {valid.__name__} {reading} {count}")
+    return count
+
 
 def get_readings(lines:str) -> Iterator[int]:
     for line in lines:
