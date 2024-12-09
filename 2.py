@@ -7,9 +7,10 @@ test = """
 8 6 4 4 1
 1 3 6 7 9"""
 
-def get_safe_count(lines: List[str]) -> int:
+def get_safe_count(readings: Iterator[int]) -> int:
     safe_count = 0
-    for reading in get_readings(lines):
+    print(type(readings))
+    for reading in readings:
         if reading[0] == reading[1]:
             continue
         if reading[1] > reading[0]:
@@ -47,14 +48,99 @@ def get_readings(lines:str) -> Iterator[int]:
             assert len(tokens) > 2
             yield tokens
 
+def is_safe_modified(reading: List[int]) -> List[int]:
+    dropped = False
+    x = []
+    i = 0 
+    j = 1
+    if (reading[0] == reading[1]):
+        i += 1
+        j += 1
+        dropped = True
+        dropped_index = -1
+    
+    if (reading[1] < reading[0] and reading[1] < reading[2]):
+        i = 0
+        j = 2
+    if (reading[1] > reading[0] and reading[1] > reading[2]):
+        i = 0
+        j = 2
 
+
+    if (reading[i] - reading[j])  == 0:
+        return False
+
+    increasing = (reading[i] - reading[j]) > 0
+
+    while j < len(reading):
+        print(f"{i} {j} : {increasing} {reading[i]} - {reading[j]} = {reading[i] - reading[j]}")
+        if not (is_valid(increasing, reading[i] - reading[j])):
+            if dropped:
+                return False
+            dropped = True
+            dropped_index = j
+            if dropped_index == 1:
+                increasing = not increasing
+            j += 1
+            continue
+        #x.append(d)
+        #c = reading[j]
+        i += 1
+        if (dropped and i == dropped_index):
+            i += 1
+        j += 1
+    #print(f"{reading} {x}")
+    return True
+
+def is_valid(increasing: bool, difference:int) -> bool:
+    if (increasing):
+        return difference in [1,2,3] 
+    return difference in [-1,-2,-3]
+
+def get_modified_safe_count(readings: Iterator[int]) -> List[int]:
+    modified_safe_count = 0
+    for reading in readings:
+        if (is_safe_modified(reading)):
+            modified_safe_count += 1
+        # print(f"read: {reading} {get_differentials(reading)}")
+        # print(f"diff:   {get_differentials(reading)}")
+    return modified_safe_count
 
 lines = test.split('\n')
 # Test
-print(f"Test safe count:    {get_safe_count(lines)}")
+print(f"Test safe count 1:    {get_safe_count(get_readings(lines))}")
+print(f"Test safe count 2:    {get_modified_safe_count(get_readings(lines))}")
 
 input = []
 with open('./2.txt') as f:
     input = f.readlines()
 
-print(f"Safe count:    {get_safe_count(input)}")
+
+# Tests
+def test(reading: List[int]) -> None:
+    print(f"{reading} {is_safe_modified(reading)}")
+"""
+test([4,4,3,2,1])
+test([4,4,4,2,1])
+test([1,2,3,4,8,3])
+test([1,2,3,4,8])
+test([1,2,3,4,8,8])
+test([1,2,3,4,8,7])
+test([1,4,7,10,11,13])
+"""
+test([1,2,99,4,5,6])
+test([1,2,4,5,6])
+test([1,2,4,5,99,99])
+test([1,2,4,5,99,5])
+test([1,2,4,5,99,9])
+test([-1,-2,-4,-5,99,-9])
+test([1,-2,3,4])
+test([-1,-2,3,-4])
+
+
+
+#print(is_safe_modified([4,4,3,2,1]))
+
+#print(f"Safe count:    {get_safe_count(get_readings(input))}")
+#print(f"Safe count:    {get_modified_safe_count(get_readings(input))}")
+
