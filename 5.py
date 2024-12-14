@@ -86,4 +86,6 @@ with open('./5.txt') as f:
     input = f.read()
 
 print(get_mid(test))
-print(get_mid(input))
+print(get_mid(input)) 
+
+print(parse_input(test))
